@@ -1,15 +1,18 @@
 
 from django.core.mail import send_mail
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render,HttpResponse,redirect,reverse
 from .models import Lead,Agent
 from .forms import LeadForm,LeadModelForm,CustomUserCreationForm
 from django.views.generic import TemplateView,ListView,DetailView,CreateView,UpdateView,DeleteView
+
+
 # Create your views here.
 #CRUD -create,retrieve,update,and Delete
 
 
-class SignupView(CreateView):
+class SignupView(LoginRequiredMixin,CreateView):
     template_name = "registration/signup.html"
     form_class = CustomUserCreationForm
 
@@ -18,17 +21,17 @@ class SignupView(CreateView):
 class LandingPageView(TemplateView):
     template_name = "landing.html"
 
-class LeadListView(ListView):
+class LeadListView(LoginRequiredMixin,ListView):
     template_name = "leads/lead_list.html"
     queryset = Lead.objects.all()
     context_object_name = "leads"
-class LeadDetailView(DetailView):
+class LeadDetailView(LoginRequiredMixin,DetailView):
     template_name = 'leads/lead_details.html'
     queryset  = Lead.objects.all()
     context_object_name = 'lead'
 
 
-class LeadCreateView(CreateView):
+class LeadCreateView(LoginRequiredMixin,CreateView):
     template_name = "leads/lead_create.html"
     form_class = LeadModelForm
     def get_success_url(self) -> str:
@@ -46,14 +49,14 @@ class LeadCreateView(CreateView):
 
         return super(LeadCreateView,self).form_valid(form)
         
-class LeadUpdateView(UpdateView):
+class LeadUpdateView(LoginRequiredMixin,UpdateView):
     template_name = 'leads/lead_update.html'
     queryset = Lead.objects.all()
     form_class = LeadModelForm
     def get_success_url(self) -> str:
         return reverse("leads:lead-list")    
 
-class LeadDeleteView(DeleteView):
+class LeadDeleteView(LoginRequiredMixin,DeleteView):
     template_name = 'leads/lead_delete.html'
     queryset = Lead.objects.all()
     def get_success_url(self) -> str:
