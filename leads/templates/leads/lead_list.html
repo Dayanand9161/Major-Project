@@ -5,9 +5,12 @@
     <div class = "w-full mb-6 py-6 flex justify-between items-center border-b-gray-200">
         <div>
             <h1 class='text-4xl text-gray-800'>Leads</h1>
+        {% if request.user.is_organsior%}
         </div>
-        <a class = "text-gray-500 hover:text-blue-500" href = "{% url 'leads:lead-create'%}">Create a new Leads</a>
+        <a class = "text-gray-500 hover:text-blue-500" href = "{% url 'leads:lead-create'%}">
+        Create a new Leads</a>
     </div>
+    {% endif %}
 
     <div class="container px-5  py-15 mx-auto flex flex-wrap">
         <div class="flex flex-wrap -m-4">

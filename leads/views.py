@@ -6,13 +6,14 @@ from django.shortcuts import render,HttpResponse,redirect,reverse
 from .models import Lead,Agent
 from .forms import LeadForm,LeadModelForm,CustomUserCreationForm
 from django.views.generic import TemplateView,ListView,DetailView,CreateView,UpdateView,DeleteView
+from agents.mixins import OrganisorAndLoginRequiredMixin
 
 
 # Create your views here.
 #CRUD -create,retrieve,update,and Delete
 
 
-class SignupView(LoginRequiredMixin,CreateView):
+class SignupView(CreateView):
     template_name = "registration/signup.html"
     form_class = CustomUserCreationForm
 
@@ -23,15 +24,36 @@ class LandingPageView(TemplateView):
 
 class LeadListView(LoginRequiredMixin,ListView):
     template_name = "leads/lead_list.html"
-    queryset = Lead.objects.all()
     context_object_name = "leads"
+
+    def get_queryset(self):
+        user = self.request.user
+
+        #inital queryset of leads for the entire orgainsiton
+        if user.is_organsior:
+            queryset = Lead.objects.filter(organisation = user.userprofile)
+        else:
+            queryset = Lead.objects.filter(organisation = user.agent.organisation)
+            queryset = queryset.filter(agent__user = user)
+        return queryset
+    
+
 class LeadDetailView(LoginRequiredMixin,DetailView):
     template_name = 'leads/lead_details.html'
-    queryset  = Lead.objects.all()
     context_object_name = 'lead'
+    def get_queryset(self):
+        user = self.request.user
+
+        #inital queryset of leads for the entire orgainsiton
+        if user.is_organsior:
+            queryset = Lead.objects.filter(organisation = user.userprofile)
+        else:
+            queryset = Lead.objects.filter(organisation = user.agent.organisation)
+            queryset = queryset.filter(agent__user = user)
+        return queryset
 
 
-class LeadCreateView(LoginRequiredMixin,CreateView):
+class LeadCreateView(OrganisorAndLoginRequiredMixin,CreateView):
     template_name = "leads/lead_create.html"
     form_class = LeadModelForm
     def get_success_url(self) -> str:
@@ -49,16 +71,24 @@ class LeadCreateView(LoginRequiredMixin,CreateView):
 
         return super(LeadCreateView,self).form_valid(form)
         
-class LeadUpdateView(LoginRequiredMixin,UpdateView):
+class LeadUpdateView(OrganisorAndLoginRequiredMixin,UpdateView):
     template_name = 'leads/lead_update.html'
-    queryset = Lead.objects.all()
+    def get_queryset(self):
+        user = self.request.user
+        #inital queryset of leads for the entire orgainsiton
+        queryset = Lead.objects.filter(organisation = user.userprofile)
+        return queryset
     form_class = LeadModelForm
     def get_success_url(self) -> str:
         return reverse("leads:lead-list")    
 
-class LeadDeleteView(LoginRequiredMixin,DeleteView):
+class LeadDeleteView(OrganisorAndLoginRequiredMixin,DeleteView):
     template_name = 'leads/lead_delete.html'
-    queryset = Lead.objects.all()
+    def get_queryset(self):
+        user = self.request.user
+        #inital queryset of leads for the entire orgainsiton
+        queryset = Lead.objects.filter(organisation = user.userprofile)
+        return queryset
     def get_success_url(self) -> str:
         return reverse('leads:lead-list')
 
