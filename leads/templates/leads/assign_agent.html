@@ -3,12 +3,11 @@
 {{% block content %}
     <a href="{% url 'leads:lead-list'%}">Go Back To Leads</a>
 
-    <h1> Create A Lead </h1>
-    <h2>fill the details</h2>
+    <h1> Assign  an Agent to this lead </h1>
     <form method="post">
     {% csrf_token %}
     {{form.as_p}}
 
-    <button type = "submit">Create Lead</button>
+    <button type = "submit">Add Agent</button>
 </form>
 {% endblock content %}}
