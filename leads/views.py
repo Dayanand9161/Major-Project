@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render,HttpResponse,redirect,reverse
 from .models import Lead,Agent,Category
-from .forms import LeadForm,LeadModelForm,CustomUserCreationForm,AssignAgentFrom,LeadCategoryUpdateForm
+from .forms import LeadForm,LeadModelForm,CustomUserCreationForm,AssignAgentFrom,LeadCategoryUpdateForm,CateogryModelForm
 from django.views.generic import (
     TemplateView,ListView,
     DetailView,CreateView,
@@ -168,8 +168,8 @@ class CategoryDetailView(LoginRequiredMixin,DetailView):
 
     def get_context_data(self, **kwargs):
         context =  super(CategoryDetailView,self).get_context_data(**kwargs)
-        leads = self.get_object().leads.all()
-        # leads =  Lead.objects.filter(category = self.get_object())
+        # leads = self.get_object().leads.all()
+        leads =  Lead.objects.filter(category = self.get_object())
 
         context.update(
             {
@@ -178,8 +178,6 @@ class CategoryDetailView(LoginRequiredMixin,DetailView):
         )
         return context
     
-    
-
     
     def get_queryset(self):
         user = self.request.user
@@ -191,8 +189,6 @@ class CategoryDetailView(LoginRequiredMixin,DetailView):
             queryset = Category.objects.filter(organisation = user.agent.organisation)
         return queryset
                          
-
-
 class LeadCategoryUpdateView(LoginRequiredMixin,UpdateView):
     template_name = 'leads/lead_category_update.html'
     form_class = LeadCategoryUpdateForm
@@ -210,7 +206,59 @@ class LeadCategoryUpdateView(LoginRequiredMixin,UpdateView):
     
     
     def get_success_url(self) -> str:
+        return reverse("leads:lead-detail",kwargs = {"pk":self.get_object().id})
+
+class CategoryCreateView(OrganisorAndLoginRequiredMixin,CreateView):
+    template_name = "leads/category_create.html"
+    form_class = CateogryModelForm
+
+    def get_success_url(self) -> str:
         return reverse("leads:category-list")
+    def form_valid(self,form):
+        #todo send emails
+        category = form.save(commit=False)
+        category.organisation = self.request.user.userprofile
+        category.save()
+        return super(CategoryCreateView,self).form_valid(form)
+
+
+class CategoryUpdateView(OrganisorAndLoginRequiredMixin,UpdateView):
+    template_name = "leads/category_update.html"
+    form_class = CateogryModelForm
+
+    
+    def get_queryset(self):
+        user = self.request.user
+
+        #inital queryset of leads for the entire orgainsiton
+        if user.is_organsior:
+            queryset = Category.objects.filter(organisation = user.userprofile)
+        else:
+            queryset = Category.objects.filter(organisation = user.agent.organisation)
+        return queryset
+    
+
+    def get_success_url(self) -> str:
+        return reverse("leads:category-list")
+    
+class CategoryDeleteView(OrganisorAndLoginRequiredMixin,DeleteView):
+    template_name = "leads/category_delete.html"
+    def get_queryset(self):
+        user = self.request.user
+
+        #inital queryset of leads for the entire orgainsiton
+        if user.is_organsior:
+            queryset = Category.objects.filter(organisation = user.userprofile)
+        else:
+            queryset = Category.objects.filter(organisation = user.agent.organisation)
+        return queryset
+    
+
+    def get_success_url(self) -> str:
+        return reverse("leads:category-list")
+
+
+
 
 def landing(request):
     return render(request,'landing.html')

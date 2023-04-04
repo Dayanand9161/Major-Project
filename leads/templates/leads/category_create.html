@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load tailwind_filters %}
+
+{{% block content %}
+    <a href="{% url 'leads:category-list'%}">Go Back to Categories</a>
+
+    <h1> Create A Lead </h1>
+    <h2>fill the details</h2>
+    <form method="post">
+    {% csrf_token %}
+    {{form|crispy}}
+
+    <button type = "submit">Create Category</button>
+</form>
+{% endblock content %}}

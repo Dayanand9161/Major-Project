@@ -1,18 +1,22 @@
 from django import forms
-from .models import Lead,Agent
+from .models import Lead,Agent,Category
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm,UsernameField
 
 User = get_user_model()
 
 class LeadModelForm(forms.ModelForm):
-    class Meta:
+   class Meta:
         model = Lead
         fields = (
-            "first_name",
-            "last_name",
+            'first_name',
+            'last_name',
             'age',
-            'agent', 
+            'agent',
+            'description',
+            'phone_number',
+            'email',
+            'profile_picture'
         )
 
 class LeadForm(forms.Form):
@@ -42,4 +46,11 @@ class LeadCategoryUpdateForm(forms.ModelForm):
         model = Lead
         fields = (
             'category',
+        )
+
+class CateogryModelForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = (
+            'name',
         )
